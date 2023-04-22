@@ -18,11 +18,6 @@ def get_my_stock_variation(account, d_h1y):
     data01 = pd.DataFrame(data1,columns=['Ticker','Mean [%]','3xStd [%]'])
     return data01
 
-def plot_my_stock_comparision(account,d_h1y, addAll = True):
-    for j in range(len(account)):
-        d_h1y[j]['Cumulative Return'].plot(label=account[j],figsize=(16,8))
-        plt.legend()
-
 def get_my_stock_data(account, period_p, addAll = True):
     d_ib = list(map(lambda ticker2: yf.Ticker(ticker2).fast_info, account))
     d_h1y = list(map(lambda ticker2: yf.Ticker(ticker2).history(period=period_p), account)) 

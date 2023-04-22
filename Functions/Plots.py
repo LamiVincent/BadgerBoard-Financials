@@ -6,6 +6,10 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import pandas as pd
 
+def plot_my_stock_comparision(account,d_h1y, addAll = True):
+    for j in range(len(account)):
+        d_h1y[j]['Cumulative Return'].plot(label=account[j],figsize=(16,8))
+        plt.legend()
 
 def multi_plot2(dfi, dfh, title, account, addAll = True):
     data = []

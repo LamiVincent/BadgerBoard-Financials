@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from IPython.display import display, HTML
 from collections import defaultdict
+import yfinance as yf
 
 def plot_my_stock_comparision(account,d_h1y, d_ib, addAll = True):
     for j in range(len(account)):
@@ -457,20 +458,11 @@ def get_sector_distribution(df_my_portfolio, b2):
             etf_data = yf.Ticker(symbol).funds_data.sector_weightings
             for sector, weight in etf_data.items():  # iterate directly over items
                 try:
-                    #weight = float(percentage.strip().replace(',', '.').replace('\xa0', '').strip().strip('%')) / 100
                     mapped_sector = map_sector_to_sector(sector)
                     initial_distribution[mapped_sector] += initial_value * weight
                     current_distribution[mapped_sector] += current_value * weight
                 except TypeError:
                     print(f"Skipping invalid weight value: {weight} for {sector}")
-            #for sector_info in etf_data:
-            #    for sector, percentage in sector_info.items():
-            #        try:
-            #            weight = float(percentage.strip().replace(',', '.').strip('%')) / 100
-            #            initial_distribution[sector] += initial_value * weight
-            #            current_distribution[sector] += current_value * weight
-            #        except ValueError:
-            #            print(f"Skipping invalid percentage value: {percentage} for {sector}")
         else:
             sector = entry.get('sector', 'Unknown')
             initial_distribution[sector] += initial_value

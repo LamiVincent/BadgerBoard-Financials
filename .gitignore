@@ -1,3 +1,6 @@
+# Personal data for stocks
+Stock_information.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

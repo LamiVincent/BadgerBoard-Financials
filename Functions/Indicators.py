@@ -5,6 +5,7 @@ import numpy as np
 import yfinance as yf
 import pandas as pd
 import os
+from datetime import timedelta
 
 def style_table(df):
     return df.style \
@@ -146,9 +147,6 @@ def get_my_stock_variation2(account, d_h1y, d_ib, d_cal_EQI, d_qis_EQI, d_top_ET
 
     return df_equities, df_etfs, df_other
 
-
-
-
 def get_my_stock_variation(account, d_h1y, d_ib):
     def xstr(s):
         return '' if s is None else str(s)
@@ -232,7 +230,6 @@ def get_my_stock_data(account, period_p, span12=12, span26=26, span9=9, addAll =
             
     return d_ib, d_h1y, d_cal_EQI, d_qis_EQI, d_top_ETF
 
-
 def get_ema(data, period=0, column='Close'):
     data['ema' + str(period)] = data[column].ewm(ignore_na=False, min_periods=period, com=period, adjust=True).mean()
     
@@ -254,7 +251,6 @@ def get_macd(data, period_long=26, period_short=12, period_signal=9, column='Clo
     data = data.drop(remove_cols, axis=1)
         
     return data
-
 
 def calculate_rsi(data, window=14):
     """
@@ -287,8 +283,6 @@ def calculate_rsi(data, window=14):
     
     return rsi
 
-
-
 def income_statement_overview(which, d_ib, dfv, quarterly_income_statement):
     from IPython.display import display, HTML
     if 'quarterly_income_statement' in locals() and not quarterly_income_statement.empty:
@@ -319,3 +313,69 @@ def income_statement_overview(which, d_ib, dfv, quarterly_income_statement):
         display(dfv.loc[listv]) #2,6,9,11)  # Display the table
     else:
         display(HTML("No yearly income statement"))
+
+def calculate_dividend_yield(dividends: pd.Series, market_price: float) -> float:
+    """
+    Calculate the dividend yield based on the past 12 months' dividends.
+    
+    :param dividends: A Pandas Series where the index is datetime (timezone-aware) and values are dividends.
+    :param market_price: The current market price of the ETF.
+    :return: The dividend yield as a percentage.
+    """
+    # Ensure today's timestamp has the same timezone as the index
+    today = pd.Timestamp.now(tz=dividends.index.tz)
+
+    # Calculate one year ago
+    one_year_ago = today - timedelta(days=365)
+
+    # Filter dividends from the last 12 months
+    recent_dividends = dividends[dividends.index > one_year_ago]
+
+    # Sum the dividends paid in the last year
+    total_dividends = recent_dividends.sum()
+
+    # Calculate dividend yield
+    dividend_yield = (total_dividends / market_price) * 100  # Convert to percentage
+
+    return dividend_yield
+
+def calculate_dividends(df_my_portfolio, b2, etf_data):
+
+    yield_percentages = []
+    yield_EUR = []
+
+    for entry in df_my_portfolio:
+        if 'symbol' not in entry or 'regularMarketPrice' not in entry:
+            yield_percentages.append(None)  # or 0, depending on preference
+            yield_EUR.append(None) 
+            continue
+
+        symbol = entry['symbol']
+        quote_type = entry.get('quoteType', '')
+        current_price = entry['regularMarketPrice']
+
+        symbol_data = next((item for item in b2 if item['symbol'] == symbol), None)
+        if not symbol_data:
+            yield_percentages.append(None)
+            yield_EUR.append(None) 
+            continue
+
+        if quote_type in ['CRYPTOCURRENCY', 'MUTUALFUND']:
+            yield_percentages.append(0)
+            yield_EUR.append(0) 
+
+        elif quote_type == 'ETF' and symbol in etf_data:
+            dividends = yf.Ticker(symbol).dividends
+            dividends.index = pd.to_datetime(dividends.index)  # ensure datetime
+            dividends = dividends.tz_convert("Europe/Berlin")  # convert timezone
+            y = calculate_dividend_yield(dividends, current_price)
+            yield_percentages.append(y)
+            yield_EUR.append(y*current_price/100)
+
+        else:
+            info = yf.Ticker(symbol).info
+            y=info.get('dividendYield', 0)
+            yield_percentages.append(y)
+            yield_EUR.append(y*current_price/100)
+    
+    return yield_percentages, yield_EUR

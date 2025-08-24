@@ -243,7 +243,7 @@ def plot_equity_table(df_equities, df_etfs, df_others, width="1200px", height = 
         display(df_others)  # Display the table
 
 def map_country_to_region(country):
-    europe = {"Germany","Deutschland", "Frankreich", "Schweiz", "Irland", "Niederlande", "Großbritannien", "Schweden", "Italien", "Spanien", "Dänemark", "Jersey"}
+    europe = {"Germany","Deutschland", "Frankreich", "Schweiz", "Irland", "Niederlande", "Großbritannien", "Schweden", "Italien", "Spanien", "Dänemark", "Jersey", "Denmark"}
     if country in europe:
         return "Europe"
     if country in {"Canada","Kanada"}:
@@ -343,6 +343,7 @@ def plot_portfolio(df_my_portfolio, b2, etf_data):
     ax.set_title('Portfolio Performance by Region')
     plt.xticks(rotation=45)
     plt.show()
+    return region_labels, region_values
     
 def plot_country_distribution(df_my_portfolio, b2, etf_data):
     initial_distribution = defaultdict(float)

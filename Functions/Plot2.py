@@ -269,6 +269,11 @@ def map_sector_to_sector(sector):
 def plot_portfolio(df_my_portfolio, b2, etf_data):
     region_profits_losses = {}
     
+    inital_mon = sum(
+        position['num_equities'] * position['purchase_price']
+        for position in b2
+    )
+
     for i, entry in enumerate(df_my_portfolio):
         if 'symbol' not in entry or 'regularMarketPrice' not in entry:
             print(f"Skipping {entry.get('symbol', 'Unknown')} due to missing data.")
@@ -343,7 +348,7 @@ def plot_portfolio(df_my_portfolio, b2, etf_data):
     ax.set_title('Portfolio Performance by Region')
     plt.xticks(rotation=45)
     plt.show()
-    return region_labels, region_values
+    return region_labels, region_values, inital_mon
     
 def plot_country_distribution(df_my_portfolio, b2, etf_data):
     initial_distribution = defaultdict(float)
